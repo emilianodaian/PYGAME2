@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Informe - Proyecto Final Dino Runner</title>
+  <style>
+    @page { size: A4; margin: 2cm; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 11pt;
+      line-height: 1.5;
+      color: #222;
+      background: #fff;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    h1, h2, h3 { color: #3b2f7a; }
+    h2 { border-bottom: 2px solid #3b2f7a; padding-bottom: 4px; margin-top: 32px; }
+    code, pre { font-family: Consolas, "Courier New", monospace; background: #f2f0fa; }
+    code { padding: 1px 4px; border-radius: 3px; }
+    pre { padding: 10px; border-radius: 6px; overflow-x: auto; font-size: 9.5pt; }
+    table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+    th, td { border: 1px solid #bbb; padding: 6px 8px; text-align: left; vertical-align: top; }
+    th { background: #ece9f8; }
+    figure { margin: 16px 0; text-align: center; page-break-inside: avoid; }
+    figure img { max-width: 100%; border: 1px solid #999; }
+    figcaption { font-size: 9.5pt; color: #555; margin-top: 4px; }
+    .portada {
+      height: 90vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
+      page-break-after: always;
+    }
+    .portada h1 { font-size: 28pt; margin-bottom: 4px; }
+    .portada .sub { font-size: 14pt; color: #555; margin-bottom: 48px; }
+    .portada p { font-size: 13pt; margin: 6px 0; }
+    .completar { background: #fff3b0; padding: 0 4px; }
+  </style>
+</head>
+<body>
+
+<section class="portada">
+  <h1>Proyecto Final</h1>
+  <p class="sub">Juego arcade en Python: <strong>Dino Runner</strong><br>(Pygame + HTML/CSS)</p>
+  <p><strong>Alumno/a:</strong> <span class="completar">[NOMBRE Y APELLIDO]</span></p>
+  <p><strong>Comisión:</strong> <span class="completar">[COMISIÓN]</span></p>
+  <p><strong>Docente:</strong> <span class="completar">[DOCENTE]</span></p>
+  <p><strong>Fecha de entrega:</strong> 16 de octubre de 2026</p>
+</section>
+
+<h2>1. Introducción</h2>
+<p>
+  El objetivo del trabajo fue programar un juego 2D del tipo "corredor infinito", inspirado en el
+  dinosaurio que aparece en Google Chrome cuando no hay conexión a internet. El personaje corre
+  automáticamente y el jugador solo tiene que saltar para esquivar los obstáculos. Gana más puntos
+  quien sobreviva más tiempo.
+</p>
+<p>
+  Elegí mantener la idea original del dinosaurio porque las reglas son simples y conocidas, lo que me
+  permitió concentrarme en las partes técnicas: la física del salto, la detección de colisiones, la
+  dificultad creciente, el guardado de los resultados y la generación del ranking en HTML. Además de
+  los requisitos mínimos, implementé varios desafíos opcionales:
+</p>
+<ul>
+  <li>Pantalla de iniciales dentro del juego, eligiendo cada letra con las flechas como en las recreativas.</li>
+  <li>Obstáculos de distinta altura (cactus chicos, grandes, grupos de cactus y pájaros que vuelan a dos alturas) que aparecen a intervalos aleatorios.</li>
+  <li>Sonidos al saltar, al chocar, al sumar cada 100 puntos y al elegir las iniciales.</li>
+  <li>Pantalla de inicio y pantalla de game over con el top 5.</li>
+</ul>
+
+<h2>2. Arquitectura del proyecto</h2>
+<pre>proyecto_final/
+├── juego.py             # el juego en Pygame (loop, física, dibujo, pantallas)
+├── datos.py             # guardado y lectura de ranking.txt
+├── generar_ranking.py   # ordena las partidas y arma ranking.html
+├── estilos.css          # estética arcade del ranking
+├── ranking.txt          # una línea por partida, crece con cada juego
+├── ranking.html         # se regenera después de cada partida
+└── capturas/            # capturas de pantalla (tecla F12 en el juego)</pre>
+
+<table>
+  <tr><th>Archivo</th><th>Responsabilidad</th></tr>
+  <tr>
+    <td><code>juego.py</code></td>
+    <td>Crea la ventana, ejecuta el <em>game loop</em>, maneja el teclado, la física del salto, los
+      obstáculos, el puntaje, los sonidos y todas las pantallas (inicio, juego, game over, iniciales).</td>
+  </tr>
+  <tr>
+    <td><code>datos.py</code></td>
+    <td>Se encarga solo de los datos: <code>guardar_resultado()</code> agrega una línea al final de
+      <code>ranking.txt</code> y <code>leer_partidas()</code> lo lee y devuelve una lista de diccionarios.</td>
+  </tr>
+  <tr>
+    <td><code>generar_ranking.py</code></td>
+    <td>Usa <code>leer_partidas()</code>, ordena la lista de mayor a menor, toma las 10 primeras y escribe
+      <code>ranking.html</code>. Se puede ejecutar solo (<code>python generar_ranking.py</code>) o desde el juego.</td>
+  </tr>
+  <tr>
+    <td><code>estilos.css</code></td>
+    <td>Define el aspecto retro: fuente pixelada, colores neón, un color distinto por puesto, líneas de
+      monitor CRT y el texto "INSERT COIN" que parpadea.</td>
+  </tr>
+</table>
+
+<p><strong>Cómo se relacionan:</strong> al terminar una partida, <code>juego.py</code> llama a
+  <code>guardar_resultado()</code> de <code>datos.py</code> y después a <code>generar_ranking(abrir=True)</code>
+  de <code>generar_ranking.py</code>, que vuelve a leer <code>ranking.txt</code>, genera el HTML (que enlaza a
+  <code>estilos.css</code>) y lo abre en el navegador con el módulo <code>webbrowser</code>.</p>
+<pre>juego.py ──guardar_resultado()──▶ datos.py ──escribe──▶ ranking.txt
+    │                                 ▲
+    └──generar_ranking()──▶ generar_ranking.py ──lee── ┘
+                                 │
+                                 └──escribe──▶ ranking.html ──usa──▶ estilos.css
+                                                     │
+                                                     └──▶ se abre en el navegador</pre>
+
+<h2>3. Decisiones de diseño</h2>
+
+<h3>3.1 Estados del juego y game loop</h3>
+<p>El juego funciona como una máquina de estados guardada en la variable <code>estado</code>:
+  <code>"inicio" → "jugando" → "choque" → "iniciales" → "fin" → "jugando"</code>. En cada vuelta del loop
+  se hacen siempre tres pasos: (1) leer los eventos del teclado, (2) actualizar la lógica según el estado y
+  (3) dibujar. El loop corre a 60 cuadros por segundo con <code>pygame.time.Clock</code>.</p>
+<p>Todos los movimientos se calculan multiplicando por <code>dt</code> (los segundos que pasaron desde el
+  cuadro anterior). Así el juego se mueve a la misma velocidad aunque la computadora sea más lenta o más rápida.</p>
+
+<h3>3.2 Salto y física</h3>
+<p>El dinosaurio tiene una velocidad vertical <code>vel_y</code>. Al presionar espacio se le asigna una
+  velocidad negativa (hacia arriba) y en cada cuadro la gravedad la va aumentando:</p>
+<pre>jugador["vel_y"] += GRAVEDAD * dt          # la gravedad frena la subida y acelera la caída
+jugador["y"]     += jugador["vel_y"] * dt  # la velocidad mueve al personaje
+if jugador["y"] >= piso:                   # tocó el suelo
+    jugador["y"] = piso
+    jugador["vel_y"] = 0
+    jugador["en_suelo"] = True</pre>
+<p>Solo se puede saltar si <code>en_suelo</code> es verdadero (no hay doble salto). Además, si se suelta la
+  tecla mientras sube, la velocidad se recorta y el salto es más bajo, igual que en el juego original. Con
+  los valores elegidos (gravedad 2600 px/s², salto de 900 px/s) el salto alcanza unos 150 píxeles de altura.</p>
+
+<h3>3.3 Obstáculos y dificultad creciente</h3>
+<p>Los obstáculos se guardan en una lista. Cada uno es un diccionario con su tipo y un <code>pygame.Rect</code>.
+  En cada cuadro se mueven hacia la izquierda y se eliminan de la lista los que salieron de la pantalla.
+  La distancia hasta el siguiente obstáculo es aleatoria, pero su mínimo crece con la velocidad, para que
+  siempre se pueda caer entre dos obstáculos. Los pájaros aparecen recién cuando el juego va más rápido:
+  el pájaro bajo hay que saltarlo y el alto, en cambio, pasa por arriba si no se salta.</p>
+<p>La velocidad empieza en 420 px/s y aumenta 10 px/s por cada segundo jugado, hasta un máximo de 1100 px/s.
+  El puntaje se calcula a partir de la distancia recorrida, por lo que también crece más rápido a medida que
+  aumenta la velocidad.</p>
+
+<h3>3.4 Detección de colisión</h3>
+<p>Se usa <code>Rect.colliderect()</code> de Pygame entre el rectángulo del dinosaurio y el de cada obstáculo.
+  Como los dibujos tienen partes transparentes en las esquinas, los rectángulos se achican unos píxeles con
+  <code>inflate()</code> antes de comparar. Así se evita perder por "tocar" un obstáculo que visualmente no se tocó.</p>
+
+<h3>3.5 Ingreso de iniciales</h3>
+<p>Las tres letras se guardan como posiciones dentro del texto <code>"ABC...Z"</code>. Las flechas arriba y
+  abajo suman o restan 1 usando el operador <code>%</code> para que después de la Z vuelva a la A. Izquierda y
+  derecha cambian de letra, y ENTER confirma. También se puede escribir la letra directamente con el teclado.</p>
+
+<h3>3.6 Guardado del puntaje</h3>
+<p>Cada partida se guarda como una línea de texto <code>INICIALES;PUNTAJE;FECHA</code>, por ejemplo
+  <code>ANA;1024;2026-10-11 10:31</code>. El archivo se abre en modo <code>"a"</code> (append) para que cada
+  resultado se agregue al final sin borrar los anteriores. Al leerlo se ignoran las líneas vacías o mal
+  formadas, para que un error en el archivo no haga fallar el juego.</p>
+
+<h3>3.7 Generación del ranking en HTML</h3>
+<p>Las partidas se ordenan de mayor a menor con un <strong>ordenamiento por inserción</strong> programado a mano
+  (en lugar de usar <code>sorted()</code>), para practicar lo visto en la cursada. Si hay empate, queda primero
+  la partida más antigua. Después se toman los 10 primeros y se arma el HTML con un f-string; si hay menos de
+  10 partidas, las filas faltantes se completan con guiones. Las iniciales se pasan por
+  <code>html.escape()</code> por seguridad. Finalmente <code>webbrowser.open()</code> abre la página.</p>
+
+<h2>4. Capturas de pantalla</h2>
+<p class="completar">Reemplazar estas imágenes por capturas propias si se desea (en el juego, la tecla F12 guarda una captura en la carpeta <code>capturas/</code>).</p>
+
+<figure>
+  <img src="../capturas/inicio.png" alt="Pantalla de inicio">
+  <figcaption>Figura 1. Pantalla de inicio.</figcaption>
+</figure>
+<figure>
+  <img src="../capturas/juego.png" alt="Juego en ejecución">
+  <figcaption>Figura 2. Juego en ejecución: cactus de distintos tamaños, un pájaro y el puntaje arriba a la derecha.</figcaption>
+</figure>
+<figure>
+  <img src="../capturas/iniciales.png" alt="Ingreso de iniciales">
+  <figcaption>Figura 3. Ingreso de iniciales con las flechas, estilo recreativa.</figcaption>
+</figure>
+<figure>
+  <img src="../capturas/game_over.png" alt="Pantalla de game over">
+  <figcaption>Figura 4. Pantalla de game over con el top 5.</figcaption>
+</figure>
+<figure>
+  <img src="../capturas/ranking_html.png" alt="ranking.html con el top 10">
+  <figcaption>Figura 5. ranking.html abierto en el navegador mostrando el top 10.</figcaption>
+</figure>
+
+<h2>5. Dificultades encontradas</h2>
+<table>
+  <tr><th>Dificultad</th><th>Solución</th></tr>
+  <tr>
+    <td>La velocidad del juego cambiaba según la computadora.</td>
+    <td>Multiplicar todos los movimientos por <code>dt</code> y limitar los FPS con <code>Clock.tick()</code>.
+      También se limita <code>dt</code> a 0,05 s para que, si la ventana se traba, el dinosaurio no atraviese un obstáculo.</td>
+  </tr>
+  <tr>
+    <td>Se podía saltar en el aire (salto infinito).</td>
+    <td>Agregar la variable <code>en_suelo</code> y permitir el salto solo cuando es verdadera.</td>
+  </tr>
+  <tr>
+    <td>A alta velocidad aparecían obstáculos tan juntos que era imposible pasarlos.</td>
+    <td>Calcular la distancia mínima entre obstáculos en función de la velocidad actual.</td>
+  </tr>
+  <tr>
+    <td>Choques "injustos" por las esquinas transparentes de los dibujos.</td>
+    <td>Achicar los rectángulos de colisión con <code>inflate()</code>.</td>
+  </tr>
+  <tr>
+    <td>El ranking se guardaba en otra carpeta si el juego se ejecutaba desde otro lugar.</td>
+    <td>Armar las rutas a partir de la carpeta del propio archivo con <code>Path(__file__).parent</code>.</td>
+  </tr>
+  <tr>
+    <td>Querer agregar sonidos sin depender de archivos de audio externos.</td>
+    <td>Generar los sonidos por código: una onda cuadrada (o ruido para el choque) cuyo volumen baja hasta cero.</td>
+  </tr>
+</table>
+<p class="completar">[Agregar aquí otras dificultades propias que hayan surgido durante el desarrollo.]</p>
+
+<h2>6. Instalación y ejecución desde cero</h2>
+<ol>
+  <li>Instalar <strong>Python 3.10 o superior</strong> desde python.org (marcar "Add Python to PATH").</li>
+  <li>Instalar Visual Studio Code y su extensión de Python (recomendado).</li>
+  <li>Abrir una terminal en la carpeta del proyecto y crear un entorno virtual (opcional):
+    <pre>python -m venv .venv
+.venv\Scripts\activate</pre></li>
+  <li>Instalar Pygame:
+    <pre>pip install pygame</pre>
+    (En versiones muy nuevas de Python, si <code>pygame</code> no instala, usar <code>pip install pygame-ce</code>,
+    que es compatible y se importa igual.)</li>
+  <li>Ejecutar el juego:
+    <pre>python juego.py</pre></li>
+  <li>Para regenerar el ranking sin jugar: <code>python generar_ranking.py</code></li>
+</ol>
+<p><strong>Controles:</strong> ESPACIO o FLECHA ARRIBA para saltar · flechas y ENTER para las iniciales ·
+  F12 para guardar una captura · ESC para salir.</p>
+
+<h2>7. Ideas de mejora a futuro</h2>
+<ul>
+  <li>Poder agacharse con la flecha abajo para esquivar los pájaros bajos.</li>
+  <li>Modo día y noche que cambie los colores cada cierta cantidad de puntos.</li>
+  <li>Reemplazar los dibujos hechos con código por imágenes y animaciones más detalladas.</li>
+  <li>Hacer la versión con Flask (desafío avanzado) para compartir el ranking entre varias computadoras.</li>
+</ul>
+
+</body>
+</html>
