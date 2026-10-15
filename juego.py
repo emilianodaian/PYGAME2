@@ -213,7 +213,6 @@ def cortar_salto(jugador):
     if jugador["vel_y"] < CORTE_SALTO:
         jugador["vel_y"] = CORTE_SALTO
 
-
 def actualizar_jugador(jugador, dt):
     """
     Aplica la física: la gravedad cambia la velocidad y la velocidad
